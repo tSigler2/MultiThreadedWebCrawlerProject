@@ -2,12 +2,14 @@
 #include <limits.h>
 #include <stdlib.h>
 
+//Queue structure
 struct Queue{
     int front, rear, size;
     unsigned cap;
     int *array;
 };
 
+//Method to create queue
 struct Queue* createQueue(unsigned cap){
     struct Queue* q = (struct Queue*) malloc(sizeof(struct Queue));
 
@@ -18,14 +20,17 @@ struct Queue* createQueue(unsigned cap){
     return q;
 }
 
+//Returns whether the queue is full
 int full(struct Queue* q){
     return (q->size == q->cap);
 }
 
+//Returns whether queue is empty
 int empty(struct Queue* q){
     return (q->size == 0);
 }
 
+//Adds to end of queue
 void enqueue(struct Queue* q, int item){
     if(full(q)) return;
 
@@ -34,6 +39,7 @@ void enqueue(struct Queue* q, int item){
     q->size = q->size + 1;
 }
 
+//Dequeues from front of queue, adjusts queue on dequeue
 int dequeue(struct Queue* q){
     if(full(q)) return INT_MIN;
 
@@ -43,12 +49,14 @@ int dequeue(struct Queue* q){
     return item;
 }
 
+//Returns front element of queue
 int front(struct Queue* q){
     if(empty(q)) return INT_MIN;
 
     return q->array[q->front];
 }
 
+//Returns element at end of queue
 int rear(struct Queue* q){
     if(empty(q)) return INT_MIN;
 
