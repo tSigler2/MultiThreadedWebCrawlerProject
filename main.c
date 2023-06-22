@@ -21,7 +21,7 @@ void p1(){
 }
 
 int main(){
-    struct Queue* q = createQueue(1000);
+    struct Queue* q = createQueue();
 
     pList[0] = processAppend(0, "Print 0", p0);
     schedule(pList, 0);
