@@ -16,7 +16,7 @@ struct Queue* createQueue(unsigned cap){
     q->cap = cap;
     q->front = q->size = 0;
     q->rear = cap-1;
-    q->array = (int*)malloc(q->cap * sizeof(int));
+    q->array = (int*)malloc(q->cap * sizeof(char) * 1000);
     return q;
 }
 
@@ -31,19 +31,20 @@ int empty(struct Queue* q){
 }
 
 //Adds to end of queue
-void enqueue(struct Queue* q, int item){
+void enqueue(struct Queue* q, char* item){
     if(full(q)) return;
 
     q->rear = (q->rear + 1) % q->cap;
-    q->array[q->rear] = item;
+    strcpy(q->array[q->rear], item);
     q->size = q->size + 1;
 }
 
 //Dequeues from front of queue, adjusts queue on dequeue
-int dequeue(struct Queue* q){
-    if(full(q)) return INT_MIN;
+char* dequeue(struct Queue* q){
+    char item[200];
 
-    int item = q->array[q->front];
+    if(full(q)) return '\0';
+    strcpy(item, q->array[q->front]);
     q->size = q->size - 1;
 
     return item;

@@ -8,7 +8,7 @@
 //Process control block structure
 struct pcb{
     int pid, on, *function;
-    char name[32];
+    char name[MAX_LEN];
 };
 
 //Adding functions to array of process control blocks
