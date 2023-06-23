@@ -1,56 +1,74 @@
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-struct Queue{
-    int front, rear, size;
-    unsigned cap;
-    int *array;
+struct Node{
+    char address[500];
+    struct Node *next;
 };
 
-struct Queue* createQueue(unsigned cap){
+//Queue structure
+struct Queue{
+    struct Node *head;
+    struct Node *tail;
+};
+
+//Method to create queue
+struct Queue* createQueue(){
     struct Queue* q = (struct Queue*) malloc(sizeof(struct Queue));
 
-    q->cap = cap;
-    q->front = q->size = 0;
-    q->rear = cap-1;
-    q->array = (int*)malloc(q->cap * sizeof(int));
     return q;
 }
 
-int full(struct Queue* q){
-    return (q->size == q->cap);
-}
-
+//Returns whether queue is empty
 int empty(struct Queue* q){
-    return (q->size == 0);
+    return (q->tail == NULL);
 }
 
-void enqueue(struct Queue* q, int item){
-    if(full(q)) return;
+//Adds to end of queue
+void enqueue(struct Queue* q, char item[500]){
+    struct Node *p = malloc(sizeof(struct Node));
+    strcpy(p->address, item);
+    p->next = NULL;
 
-    q->rear = (q->rear + 1) % q->cap;
-    q->array[q->rear] = item;
-    q->size = q->size + 1;
+    if(q->head == NULL && q->tail == NULL){
+        q->head->next = q->tail;
+    }
+    else{
+        q->head->next = p;
+        q->head = p;
+    }
 }
 
-int dequeue(struct Queue* q){
-    if(full(q)) return INT_MIN;
+//Dequeues from front of queue, adjusts queue on dequeue
+const char* dequeue(struct Queue* q){
+    static char ret[500];
+    if(q->tail == NULL){
+        printf("EMPTY");
+        return 0;
+    }
 
-    int item = q->array[q->front];
-    q->size = q->size - 1;
+    strcpy(ret, q->tail->address);
 
-    return item;
+    if(q->head == q->tail){
+        q->head = NULL;
+    }
+    q->tail = q->tail->next;
+
+    return ret;
 }
 
-int front(struct Queue* q){
-    if(empty(q)) return INT_MIN;
+//Returns front element of queue
+const char* front(struct Queue* q){
+    if(empty(q)) return 0;
 
-    return q->array[q->front];
+    return q->tail->address;
 }
 
-int rear(struct Queue* q){
-    if(empty(q)) return INT_MIN;
+//Returns element at end of queue
+const char* rear(struct Queue* q){
+    if(empty(q)) return 0;
 
-    return q->array[q->rear];
+    return q->head->address;
 }
