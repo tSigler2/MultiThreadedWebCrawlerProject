@@ -23,6 +23,7 @@ size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
 }
 
 
+
 // The web_crawler thread function
 void *web_crawler_thread(void *arg) {
 	CURL* curl = curl_easy_init();
@@ -33,7 +34,7 @@ void *web_crawler_thread(void *arg) {
 	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, handle_response);
 	curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
 
-	char* url = NULL;
+	const char *url = NULL;
 
 	for (;;) {
 		// Dequeue the next URL
@@ -54,7 +55,6 @@ void *web_crawler_thread(void *arg) {
 		// Save processed URL
 		fprintf(url_file, "%s\n", url);
 
-		free(url);
 		url = NULL;
 	}
 	curl_easy_cleanup(curl);
@@ -103,7 +103,7 @@ void web_crawler_destroy(web_crawler *crawler) {
 	free(crawler->threads);
 	// clean up the url_frontier
 	while(!empty(url_frontier)) {
-		free(dequeue(url_frontier));
+		dequeue(url_frontier);
 	}
 	free(url_frontier);
 	free(crawler);

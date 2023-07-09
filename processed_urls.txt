@@ -5,3 +5,4 @@ http://shop.example.com
 http://news.example.com
 http://forum.example.com
 http://support.example.com
+http://example.com

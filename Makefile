@@ -1,5 +1,6 @@
 CC=gcc
-CFLAGS=-I. -lcurl -lpthread
+CFLAGS=-I.
+LDFLAGS=-lcurl -lpthread
 DEPS = web_crawler.h
 OBJ = main.o web_crawler.o queue.o
 
@@ -7,10 +8,9 @@ OBJ = main.o web_crawler.o queue.o
 	$(CC) -c -o $@ $< $(CFLAGS)
 
 web_crawler: $(OBJ)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS)
 
 .PHONY: clean
 
 clean:
 	rm -f $(OBJ) web_crawler
-
