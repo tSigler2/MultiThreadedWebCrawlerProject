@@ -2,6 +2,11 @@
 
 ## **Web Crawler OS Project**
 
+### terminal commands for use:
+ $ make           #compiles all files
+ $ ./web_crawler  #run project
+ $ make clean     #remove compile files
+
 ### main.c
 - creates the web_crawler and runs it
 
