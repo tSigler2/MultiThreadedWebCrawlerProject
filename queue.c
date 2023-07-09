@@ -1,3 +1,5 @@
+//queue.c
+
 #include <string.h>
 #include <limits.h>
 #include <stdlib.h>
@@ -83,4 +85,4 @@ const char* rear(struct Queue* q){
     if(empty(q)) return 0;
 
     return q->tail->address;
-}
+} // queue.c

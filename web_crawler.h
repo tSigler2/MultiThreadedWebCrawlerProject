@@ -5,7 +5,6 @@
 #define WEB_CRAWLER_H
 
 #include <curl/curl.h>		// used to make HTTP requests
-#include <pthread.h>		// used for multithreading
 
 typedef struct web_crawler {
     char *start_url;	// a pointer to the start URL for the web crawler
@@ -21,5 +20,5 @@ void web_crawler_destroy(web_crawler *crawler);
 // starts the web crawler. It takes a pointer to the web_crawler to be run.
 void web_crawler_run(web_crawler *crawler);
 
-#endif // WEB_CRAWLER_H
+#endif // web_crawler.h
 

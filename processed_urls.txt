@@ -1,0 +1,7 @@
+http://example.com
+http://www.example.com
+http://blog.example.com
+http://shop.example.com
+http://news.example.com
+http://forum.example.com
+http://support.example.com
