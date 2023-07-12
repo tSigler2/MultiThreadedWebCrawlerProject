@@ -1,8 +1,5 @@
 #include "web_crawler.h"  // gets our web_crawler struct and functions
 #include "queue.h"  // gets our queue struct and functions
-<<<<<<< Updated upstream
-
-=======
 #include <stdio.h>
 #include <ncurses.h>
 #include <stdbool.h>
@@ -23,7 +20,6 @@ void set_mode_nb(){
     terminal_stateAlt.c_cc[VMIN] = 0;
     tcsetattr(STDIN_FILENO, TCSANOW, &terminal_stateAlt);
 }
->>>>>>> Stashed changes
 
 int main() {
     web_crawler *crawler = web_crawler_create("http://example.com", 10);
@@ -32,10 +28,8 @@ int main() {
         return 1;
     }
 
+    while(1){
     web_crawler_run(crawler);
-
-<<<<<<< Updated upstream
-=======
         //Check if 'q' is pressed - Exit loop if pressed
         char r;
         if(read(STDIN_FILENO, &r, 1) == 1 && r == 'q'){
@@ -47,8 +41,6 @@ int main() {
     
     //Reset Terminal Settings - Turns flag back on
     tcsetattr(STDIN_FILENO, TCSANOW, &orig_terminal);
-
->>>>>>> Stashed changes
     web_crawler_destroy(crawler);
 
     return 0;
