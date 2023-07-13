@@ -1,7 +1,7 @@
 // web_crawler.c
 
 #include "web_crawler.h"    // gets our web_crawler struct
-#include <stdlib.h>    
+#include <stdlib.h>   
 #include <string.h>
 #include "queue.h"  // gets our queue struct and functions
 #include <pthread.h> // for pthread_* functions

@@ -29,7 +29,7 @@ int main() {
     }
 
     while(1){
-    web_crawler_run(crawler);
+        web_crawler_run(crawler);
         //Check if 'q' is pressed - Exit loop if pressed
         char r;
         if(read(STDIN_FILENO, &r, 1) == 1 && r == 'q'){
