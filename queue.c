@@ -69,8 +69,9 @@ const char* dequeue(struct Queue* q){
 		q->tail = NULL;
 	}
 	else{
-		q->head = q->head->next;
-		q->head->last = NULL;
+		q->head = q->head->last;
+		free(q->head->next);
+		q->head->next = NULL;
 	}
 
 	free(temp);

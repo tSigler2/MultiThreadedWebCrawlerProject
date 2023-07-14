@@ -6,3 +6,5 @@ http://news.example.com
 http://forum.example.com
 http://support.example.com
 http://example.com
+http://example.com
+
