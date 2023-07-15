@@ -25,21 +25,22 @@ size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
 }
 
 void getLinks(xmlDocPtr d){
+	//Initial an html parser
 	xmlInitParser();
 	xmlXPathContextPtr x_context;
 	xmlXPathObjectPtr x_obj;
 	xmlNodeSetPtr n;
 	int i;
 
-	x_context = xmlXPathNewContext(d);
+	x_context = xmlXPathNewContext(d); //Get path through html
 
 	if(x_context == NULL){
 		fprintf(stderr, "Unable to create xPath\n");
 		return;
 	}
 
-	const xmlChar* x_expr = (xmlChar*) "//a";
-	x_obj = xmlXPathEvalExpression(x_expr, x_context);
+	const xmlChar* x_expr = (xmlChar*) "//a"; //Context for how to find links in html
+	x_obj = xmlXPathEvalExpression(x_expr, x_context); //Try to find links
 
 	if(x_obj == NULL){
 		fprintf(stderr, "Failed to evaluate xpath expression\n");
@@ -48,9 +49,9 @@ void getLinks(xmlDocPtr d){
 	}
 	
 
-	n = x_obj->nodesetval;
+	n = x_obj->nodesetval; //Number of links found
 	printf("WORKING: %d\n", n->nodeNr);
-	for(i = 0; i < n->nodeNr; ++i){
+	for(i = 0; i < n->nodeNr; ++i){ //Supposed to enqueue new links
 		xmlNodePtr a = n->nodeTab[i];
 		xmlChar* href = xmlGetProp(a, (xmlChar*) "href");
 		if(href != NULL){
@@ -105,6 +106,7 @@ void *web_crawler_thread(void *arg) {
 			fprintf(stderr, "CURL request failed: %s\n", curl_easy_strerror(res));
 		}
 		printf("%d", i);
+		//Proper format for HTML parsing
 		xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
 
 		if(doc == NULL){
@@ -113,7 +115,7 @@ void *web_crawler_thread(void *arg) {
 			continue;
 		}
 
-		getLinks(doc);
+		getLinks(doc); //Entry for parser
 		xmlFreeDoc(doc);
 
 		// Save processed URL
@@ -121,7 +123,7 @@ void *web_crawler_thread(void *arg) {
 
 		//free((char*)url);
 		i++;
-		usleep(1000000);
+		usleep(1000000); //Sleeping script to not potentially overwhelm webpage with requests
 	}
 	curl_easy_cleanup(curl);
 	return NULL;
