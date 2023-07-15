@@ -9,7 +9,7 @@
 
 //Node Structure to make up Queue, carries strings up to 500 characters
 struct Node{
-    char address[500];
+    char* address;
     struct Node *next;
     struct Node *last;
 };
@@ -27,15 +27,18 @@ struct Queue* createQueue();
 int empty(struct Queue* q);
 
 //Adds to end of queue
-void enqueue(struct Queue* q, char item[500]);
+void enqueue(struct Queue* q, const char* item);
 
 //Dequeues from front of queue, adjusts queue on dequeue
-const char* dequeue(struct Queue* q);
+char* dequeue(struct Queue* q);
 
 //Returns front element of queue
 const char* front(struct Queue* q);
 
 //Returns element at end of queue
 const char* rear(struct Queue* q);
+
+//Destroys Queue
+void destroyQueue(struct Queue* q);
 
 #endif

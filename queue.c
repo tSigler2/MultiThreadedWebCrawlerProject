@@ -8,7 +8,7 @@
 
 //Node Structure to make up Queue, carries strings up to 500 characters
 struct Node{
-	char address[500];
+	char* address;
 	struct Node *next;
 	struct Node *last;
 };
@@ -31,38 +31,43 @@ struct Queue* createQueue(){
 
 //Returns whether queue is empty
 int empty(struct Queue* q){
-	return (q->tail == NULL);
+	return (q->head == NULL);
 }
 
 
 //Adds to end of queue
-void enqueue(struct Queue* q, char item[500]){
+void enqueue(struct Queue* q, const char* item){
 	struct Node *p = malloc(sizeof(struct Node));
-	strcpy(p->address, item);
+	p->address = malloc((strlen(item) + 1) * sizeof(char));
+	strncpy(p->address, item, strlen(item)+1);
 	p->next = NULL;
 
 	if(q->head == NULL && q->tail == NULL){
 		q->head = p;
 		q->tail = p;
 	}
+	else if(q->head == q->tail){
+		p->next = q->tail;
+		q->tail = p;
+		q->head->last = q->tail;
+	}
 	else{
-		p->last = q->tail;
-		q->tail->next = p;
+		p->next = q->tail;
+		q->tail->last = p;
 		q->tail = p;
 	}
 }
 
 
 //Dequeues from front of queue, adjusts queue on dequeue
-const char* dequeue(struct Queue* q){
-	static char ret[500];
+char* dequeue(struct Queue* q){
 	if(q->head == NULL){
 		printf("EMPTY");
 		return NULL;
 	}
 
-	strcpy(ret, q->head->address);
 	struct Node *temp = q->head;
+	char* ret = strdup(q->head->address);
 
 	if(q->head == q->tail){
 		q->head = NULL;
@@ -70,18 +75,14 @@ const char* dequeue(struct Queue* q){
 	}
 	else{
 		q->head = q->head->last;
-		free(q->head->next);
-		q->head->next = NULL;
 	}
-
-	free(temp);
 	return ret;
 }
 
 
 //Returns front element of queue
 const char* front(struct Queue* q){
-	if(empty(q)) return 0;
+	if(empty(q)) return NULL;
 
 	return q->head->address;
 }
@@ -89,7 +90,22 @@ const char* front(struct Queue* q){
 
 //Returns element at end of queue
 const char* rear(struct Queue* q){
-	if(empty(q)) return 0;
+	if(empty(q)) return NULL;
 
 	return q->tail->address;
+}
+
+//Deallocate memory being used for queue
+void destroyQueue(struct Queue* q){
+	struct Node* curr = q->head;
+
+	while(curr != NULL){
+		struct Node* next = curr->last;
+		//free(curr->address);
+		free(curr);
+
+		curr = next;
+	}
+
+	free(q);
 } // queue.c

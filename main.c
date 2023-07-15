@@ -22,14 +22,14 @@ void set_mode_nb(){
 }
 
 int main() {
-    web_crawler *crawler = web_crawler_create("http://example.com", 10);
+    web_crawler *crawler = web_crawler_create("https://en.wikipedia.org/wiki/United_States", 10);
     if (!crawler) {
         fprintf(stderr, "Failed to create web crawler\n");
         return 1;
     }
 
-    while(1){
-        web_crawler_run(crawler);
+    web_crawler_run(crawler);
+    /*while(1){
         //Check if 'q' is pressed - Exit loop if pressed
         char r;
         if(read(STDIN_FILENO, &r, 1) == 1 && r == 'q'){
@@ -37,7 +37,7 @@ int main() {
         }
 
         usleep(10000);
-    }
+    }*/
     
     //Reset Terminal Settings - Turns flag back on
     tcsetattr(STDIN_FILENO, TCSANOW, &orig_terminal);

@@ -5,6 +5,8 @@
 #include <string.h>
 #include "queue.h"  // gets our queue struct and functions
 #include <pthread.h> // for pthread_* functions
+#include <unistd.h>
+#include <stdlib.h>
 
 
 struct Queue* url_frontier;
@@ -22,10 +24,58 @@ size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	return size * nmemb;
 }
 
+void getLinks(xmlDocPtr d){
+	xmlInitParser();
+	xmlXPathContextPtr x_context;
+	xmlXPathObjectPtr x_obj;
+	xmlNodeSetPtr n;
+	int i;
 
+	x_context = xmlXPathNewContext(d);
+
+	if(x_context == NULL){
+		fprintf(stderr, "Unable to create xPath\n");
+		return;
+	}
+
+	const xmlChar* x_expr = (xmlChar*) "//a";
+	x_obj = xmlXPathEvalExpression(x_expr, x_context);
+
+	if(x_obj == NULL){
+		fprintf(stderr, "Failed to evaluate xpath expression\n");
+		xmlXPathFreeContext(x_context);
+		return;
+	}
+	
+
+	n = x_obj->nodesetval;
+	printf("WORKING: %d\n", n->nodeNr);
+	for(i = 0; i < n->nodeNr; ++i){
+		xmlNodePtr a = n->nodeTab[i];
+		xmlChar* href = xmlGetProp(a, (xmlChar*) "href");
+		if(href != NULL){
+			char* href_copy = (char*)xmlStrdup(href);
+			while(*href_copy != '\0'){
+				printf("%c", *href_copy++);
+			}
+			if(href_copy != NULL){
+				pthread_mutex_lock(&url_frontier_lock);
+				enqueue(url_frontier, href_copy);
+				pthread_mutex_unlock(&url_frontier_lock);
+			}
+		}
+		xmlFree(href);
+	}
+
+	xmlXPathFreeObject(x_obj);
+	xmlXPathFreeContext(x_context);
+
+}
 
 // The web_crawler thread function
 void *web_crawler_thread(void *arg) {
+	int i = 0;
+
 	CURL* curl = curl_easy_init();
 	if (!curl) {
 		fprintf(stderr, "Failed to initialize CURL\n");
@@ -36,13 +86,15 @@ void *web_crawler_thread(void *arg) {
 
 	const char *url = NULL;
 
-	for (;;) {
+	while (!empty(url_frontier) && i < 100) {
 		// Dequeue the next URL
 		pthread_mutex_lock(&url_frontier_lock);
 		if (!empty(url_frontier)) {
 			url = dequeue(url_frontier);
 		}
 		pthread_mutex_unlock(&url_frontier_lock);
+
+		printf("Currently Crawling: %s\n", url);
 
 		if (url == NULL) {
 			break;
@@ -52,10 +104,24 @@ void *web_crawler_thread(void *arg) {
 		if (res != CURLE_OK) {
 			fprintf(stderr, "CURL request failed: %s\n", curl_easy_strerror(res));
 		}
+		printf("%d", i);
+		xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
+
+		if(doc == NULL){
+			fprintf(stderr, "Unable to parse: %s\n", url);
+			free((char*)url);
+			continue;
+		}
+
+		getLinks(doc);
+		xmlFreeDoc(doc);
+
 		// Save processed URL
 		fprintf(url_file, "%s\n", url);
 
-		url = NULL;
+		//free((char*)url);
+		i++;
+		usleep(1000000);
 	}
 	curl_easy_cleanup(curl);
 	return NULL;
@@ -81,6 +147,7 @@ web_crawler *web_crawler_create(char *start_url, int max_threads) {
 	while ((read = getline(&line, &len, url_file)) != -1) {
 		enqueue(url_frontier, strdup(line));
 	}
+	free(line);
 	// dynamically allocates memory for the web_crawler struct
 	web_crawler *crawler = malloc(sizeof(web_crawler));
 	// initializes the start_url and max_threads fields with the function arguments
@@ -105,7 +172,7 @@ void web_crawler_destroy(web_crawler *crawler) {
 	while(!empty(url_frontier)) {
 		dequeue(url_frontier);
 	}
-	free(url_frontier);
+	destroyQueue(url_frontier);
 	free(crawler);
 }
 

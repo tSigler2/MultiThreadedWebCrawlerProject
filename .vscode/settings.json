@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "pthread.h": "c"
-    }
+        "pthread.h": "c",
+        "htmlparser.h": "c"
+    },
+    "cmake.configureOnOpen": true
 }
