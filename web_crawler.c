@@ -56,6 +56,7 @@ void getLinks(xmlDocPtr d){
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 void getLinks(TidyNode* n, char** output) {
 	TidyNode child;
 
@@ -66,6 +67,8 @@ void getLinks(TidyNode* n, char** output) {
 				strcpy(output[c], tidyAttrValue(href));
 				c++;
 =======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
 =======
 >>>>>>> parent of bb1cf52 (Added comments)
 	const xmlChar* x_expr = (xmlChar*) "//a";
@@ -137,6 +140,7 @@ void *web_crawler_thread(void *arg) {
 		printf("%d", i);
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		//Proper format for HTML parsing
 		/*TidyBuffer o = {0};
 		TidyDoc tdoc = tidyCreate();
@@ -148,6 +152,8 @@ void *web_crawler_thread(void *arg) {
 		tidySaveBuffer(tdoc, &o);
 		tidyRelease(tdoc);*/
 =======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
 =======
 >>>>>>> parent of bb1cf52 (Added comments)
 		xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
@@ -193,12 +199,15 @@ void *web_crawler_thread(void *arg) {
 
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		printf("Getting links from the response...\n");
 		getLinks(content, url_frontier); //Entry for parser
 		printf("Links extracted from the response.\n");
 
 		//xmlFreeDoc(doc);
 =======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
 =======
 >>>>>>> parent of bb1cf52 (Added comments)
 		getLinks(doc);
@@ -212,9 +221,12 @@ void *web_crawler_thread(void *arg) {
 		i++;
 <<<<<<< HEAD
 <<<<<<< HEAD
+<<<<<<< HEAD
 		usleep(1000000); //Sleeping script to not potentially overwhelm webpage with requests
 
 =======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
 =======
 >>>>>>> parent of bb1cf52 (Added comments)
 		usleep(1000000);
