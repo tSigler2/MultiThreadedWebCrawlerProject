@@ -22,7 +22,7 @@ void set_mode_nb(){
 }
 
 int main() {
-    web_crawler *crawler = web_crawler_create("https://en.wikipedia.org/wiki/United_States", 10);
+    web_crawler *crawler = web_crawler_create("https://en.wikipedia.org/wiki/United_States", 1);
     if (!crawler) {
         fprintf(stderr, "Failed to create web crawler\n");
         return 1;

@@ -7,7 +7,10 @@
 #include <pthread.h> // for pthread_* functions
 #include <unistd.h>
 #include <stdlib.h>
+#include <tidy/tidy.h>
+#include <tidy/buffio.h>
 
+#define OUTPUT_PATH "processed_urls.txt"
 
 struct Queue* url_frontier;
 pthread_mutex_t url_frontier_lock = PTHREAD_MUTEX_INITIALIZER;  // initialize the mutex
@@ -15,32 +18,58 @@ pthread_mutex_t url_frontier_lock = PTHREAD_MUTEX_INITIALIZER;  // initialize th
 
 // File for saving processed URLs
 FILE *url_file;
+int c = 0;
 
 
 // function to handle HTTP response data
-size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
-	// for now, do nothing with the data
-	// later, you will want to parse the data and add new URLs to the queue
-	return size * nmemb;
+size_t handle_response(char *ptr, size_t size, size_t nmemb, TidyBuffer* tb) {
+    // Enqueue the links from the HTML content
+    tidyBufAppend(tb, ptr, (size * nmemb));
+
+    // Return the total size processed
+    return (size * nmemb);
 }
 
+<<<<<<< HEAD
+void write(char** output){
+	for(int i = 0; i < 10; i++){
+		if(output[i]){
+			printf("Writing %d: %s\n", i, output[i]);
+			openFileAndWrite(OUTPUT_PATH, output[i]);
+		}
+=======
 void getLinks(xmlDocPtr d){
-	//Initial an html parser
 	xmlInitParser();
 	xmlXPathContextPtr x_context;
 	xmlXPathObjectPtr x_obj;
 	xmlNodeSetPtr n;
 	int i;
 
-	x_context = xmlXPathNewContext(d); //Get path through html
+	x_context = xmlXPathNewContext(d);
 
 	if(x_context == NULL){
 		fprintf(stderr, "Unable to create xPath\n");
 		return;
+>>>>>>> parent of bb1cf52 (Added comments)
 	}
+}
 
-	const xmlChar* x_expr = (xmlChar*) "//a"; //Context for how to find links in html
-	x_obj = xmlXPathEvalExpression(x_expr, x_context); //Try to find links
+<<<<<<< HEAD
+<<<<<<< HEAD
+void getLinks(TidyNode* n, char** output) {
+	TidyNode child;
+
+	for(child = tidyGetChild(n); child != NULL; child = tidyGetChild(n)){
+		TidyAttr href = tidyAttrGetById(child, TidyAttr_HREF);
+		if(href){
+			if(c < 10){
+				strcpy(output[c], tidyAttrValue(href));
+				c++;
+=======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
+	const xmlChar* x_expr = (xmlChar*) "//a";
+	x_obj = xmlXPathEvalExpression(x_expr, x_context);
 
 	if(x_obj == NULL){
 		fprintf(stderr, "Failed to evaluate xpath expression\n");
@@ -49,9 +78,9 @@ void getLinks(xmlDocPtr d){
 	}
 	
 
-	n = x_obj->nodesetval; //Number of links found
+	n = x_obj->nodesetval;
 	printf("WORKING: %d\n", n->nodeNr);
-	for(i = 0; i < n->nodeNr; ++i){ //Supposed to enqueue new links
+	for(i = 0; i < n->nodeNr; ++i){
 		xmlNodePtr a = n->nodeTab[i];
 		xmlChar* href = xmlGetProp(a, (xmlChar*) "href");
 		if(href != NULL){
@@ -63,19 +92,22 @@ void getLinks(xmlDocPtr d){
 				pthread_mutex_lock(&url_frontier_lock);
 				enqueue(url_frontier, href_copy);
 				pthread_mutex_unlock(&url_frontier_lock);
+>>>>>>> parent of bb1cf52 (Added comments)
 			}
 		}
-		xmlFree(href);
+		if(tidyAttrValue(href)) printf("URL Found: %s\n", tidyAttrValue(href));
 	}
-
-	xmlXPathFreeObject(x_obj);
-	xmlXPathFreeContext(x_context);
-
+	getLinks(child, output);
 }
+
 
 // The web_crawler thread function
 void *web_crawler_thread(void *arg) {
 	int i = 0;
+	char* content = NULL;
+	content[0] = '\0';
+	char** parsedURLS;
+
 
 	CURL* curl = curl_easy_init();
 	if (!curl) {
@@ -87,44 +119,107 @@ void *web_crawler_thread(void *arg) {
 
 	const char *url = NULL;
 
-	while (!empty(url_frontier) && i < 100) {
 		// Dequeue the next URL
 		pthread_mutex_lock(&url_frontier_lock);
-		if (!empty(url_frontier)) {
-			url = dequeue(url_frontier);
-		}
-		pthread_mutex_unlock(&url_frontier_lock);
+        if (!empty(url_frontier)) {
+            url = dequeue(url_frontier);
+        }
+        pthread_mutex_unlock(&url_frontier_lock);
 
 		printf("Currently Crawling: %s\n", url);
+		//curl_easy_setopt(curl, CURLOPT_WRITEDATA, url_frontier);
 
-		if (url == NULL) {
-			break;
-		}
 		curl_easy_setopt(curl, CURLOPT_URL, url);
 		CURLcode res = curl_easy_perform(curl);
 		if (res != CURLE_OK) {
 			fprintf(stderr, "CURL request failed: %s\n", curl_easy_strerror(res));
 		}
 		printf("%d", i);
+<<<<<<< HEAD
+<<<<<<< HEAD
 		//Proper format for HTML parsing
+		/*TidyBuffer o = {0};
+		TidyDoc tdoc = tidyCreate();
+		tidyOptSetBool(tdoc, TidyForceOutput, yes);
+		tidyOptSetInt(tdoc, TidyWrapLen, 0);
+		tidySetErrorBuffer(tdoc, &o);
+		tidyParseString(tdoc, content);
+		tidyCleanAndRepair(tdoc);
+		tidySaveBuffer(tdoc, &o);
+		tidyRelease(tdoc);*/
+=======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
 		xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
+>>>>>>> parent of bb1cf52 (Added comments)
 
-		if(doc == NULL){
+		TidyDoc doc = tidyCreate();
+		TidyBuffer o = {0};
+		TidyBuffer err = {0};
+		tidyBufInit(&o);
+		tidyOptSetInt(doc, TidyWrapLen, 2048);
+		tidyOptSetBool(doc, TidyForceOutput, yes);
+
+		curl_easy_setopt(curl, CURLOPT_WRITEDATA, &o);
+		if (res == CURLE_OK) {
+			printf("Crawled %s\n", url);
+			tidyParseBuffer(doc, &o);
+
+			for(int i = 0; i < 10; i++){
+				parsedURLS[i] = (char*)malloc(2048*sizeof(char*));
+			}
+
+			for(int i = 0; i < 10; i++){
+				getLinks(tidygetBody(doc), parsedURLS);
+			}
+		}	
+
+		if(content != NULL){
+			getLinks(content, url_frontier);
+			fprintf(url_file, "%s\n", url);
+			free(content);
+			content = NULL;
+		}
+
+		//tidyBufFree(&o);
+
+		//xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
+
+		/*if(doc == NULL){
 			fprintf(stderr, "Unable to parse: %s\n", url);
 			free((char*)url);
 			continue;
-		}
+		}*/
 
-		getLinks(doc); //Entry for parser
+<<<<<<< HEAD
+<<<<<<< HEAD
+		printf("Getting links from the response...\n");
+		getLinks(content, url_frontier); //Entry for parser
+		printf("Links extracted from the response.\n");
+
+		//xmlFreeDoc(doc);
+=======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
+		getLinks(doc);
 		xmlFreeDoc(doc);
+>>>>>>> parent of bb1cf52 (Added comments)
 
 		// Save processed URL
 		fprintf(url_file, "%s\n", url);
 
-		//free((char*)url);
+		free((char*)url);
 		i++;
+<<<<<<< HEAD
+<<<<<<< HEAD
 		usleep(1000000); //Sleeping script to not potentially overwhelm webpage with requests
+
+=======
+=======
+>>>>>>> parent of bb1cf52 (Added comments)
+		usleep(1000000);
 	}
+>>>>>>> parent of bb1cf52 (Added comments)
 	curl_easy_cleanup(curl);
 	return NULL;
 }

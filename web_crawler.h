@@ -6,8 +6,12 @@
 
 #include <curl/curl.h>		// used to make HTTP requests
 #include <libxml/HTMLparser.h>
-#include <libxml/xpath.h> //Used for link extractions
+#include <tidy/tidy.h>
+#include <tidy/buffio.h>
+#include <libxml/xpath.h>
 #include "queue.h"
+#include <tidy/tidy.h>
+#include <tidy/buffio.h>
 
 typedef struct web_crawler {
     char *start_url;	// a pointer to the start URL for the web crawler
@@ -22,8 +26,9 @@ web_crawler *web_crawler_create(char *start_url, int max_threads);
 void web_crawler_destroy(web_crawler *crawler);
 // starts the web crawler. It takes a pointer to the web_crawler to be run.
 void web_crawler_run(web_crawler *crawler);
+void write(char** output);
 //Get links from page and enqueue them
-void getLinks(xmlDocPtr d);
+void getLinks(TidyNode* n, char** output);
 
 #endif // web_crawler.h
 

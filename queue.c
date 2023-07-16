@@ -60,23 +60,24 @@ void enqueue(struct Queue* q, const char* item){
 
 
 //Dequeues from front of queue, adjusts queue on dequeue
-char* dequeue(struct Queue* q){
-	if(q->head == NULL){
-		printf("EMPTY");
-		return NULL;
-	}
+const char* dequeue(struct Queue* q){
+    if (q->head == NULL) {
+        printf("EMPTY");
+        return NULL;
+    }
 
-	struct Node *temp = q->head;
-	char* ret = strdup(q->head->address);
+    struct Node* temp = q->head;
+    const char* ret = temp->address;
 
-	if(q->head == q->tail){
-		q->head = NULL;
-		q->tail = NULL;
-	}
-	else{
-		q->head = q->head->last;
-	}
-	return ret;
+    if (q->head == q->tail) {
+        q->head = NULL;
+        q->tail = NULL;
+    } else {
+        q->head = q->head->next;
+    }
+
+    free(temp);
+    return ret;
 }
 
 

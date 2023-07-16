@@ -30,7 +30,7 @@ int empty(struct Queue* q);
 void enqueue(struct Queue* q, const char* item);
 
 //Dequeues from front of queue, adjusts queue on dequeue
-char* dequeue(struct Queue* q);
+const char* dequeue(struct Queue* q);
 
 //Returns front element of queue
 const char* front(struct Queue* q);

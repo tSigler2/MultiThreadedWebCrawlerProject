@@ -1,6 +1,6 @@
 CC=gcc
 CFLAGS=-I.
-LDFLAGS=-lcurl -lpthread -lxml2
+LDFLAGS=-lcurl -lpthread -lxml2 -ltidy
 DEPS = web_crawler.h
 OBJ = main.o web_crawler.o queue.o
 
