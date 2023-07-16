@@ -21,7 +21,7 @@ struct Queue{
 };
 
 //Method to create queue
-struct Queue* createQueue();
+struct Queue* createQueue(int c);
 
 //Returns whether queue is empty
 int empty(struct Queue* q);

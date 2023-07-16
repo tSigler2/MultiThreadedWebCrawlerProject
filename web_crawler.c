@@ -16,6 +16,11 @@ pthread_mutex_t url_frontier_lock = PTHREAD_MUTEX_INITIALIZER;  // initialize th
 // File for saving processed URLs
 FILE *url_file;
 
+struct MemoryStruct{
+	char* m;
+	size_t s;
+};
+
 
 // function to handle HTTP response data
 size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
@@ -24,59 +29,52 @@ size_t handle_response(char *ptr, size_t size, size_t nmemb, void *userdata) {
 	return size * nmemb;
 }
 
-void getLinks(xmlDocPtr d){
-	//Initial an html parser
-	xmlInitParser();
-	xmlXPathContextPtr x_context;
-	xmlXPathObjectPtr x_obj;
-	xmlNodeSetPtr n;
-	int i;
+void getLinks(xmlDocPtr doc, struct Queue *url_frontier, pthread_mutex_t *frontier_lock) {
+    xmlInitParser();
+    xmlXPathContextPtr x_context;
+    xmlXPathObjectPtr x_obj;
+    xmlNodeSetPtr n;
+    int i;
 
-	x_context = xmlXPathNewContext(d); //Get path through html
+    x_context = xmlXPathNewContext(doc);
 
-	if(x_context == NULL){
-		fprintf(stderr, "Unable to create xPath\n");
-		return;
-	}
+    if (x_context == NULL) {
+        fprintf(stderr, "Unable to create xPath\n");
+        return;
+    }
 
-	const xmlChar* x_expr = (xmlChar*) "//a"; //Context for how to find links in html
-	x_obj = xmlXPathEvalExpression(x_expr, x_context); //Try to find links
+    const xmlChar *x_expr = (xmlChar *) "//a/@href";
+    x_obj = xmlXPathEvalExpression(x_expr, x_context);
 
-	if(x_obj == NULL){
-		fprintf(stderr, "Failed to evaluate xpath expression\n");
-		xmlXPathFreeContext(x_context);
-		return;
-	}
-	
+    if (x_obj == NULL) {
+        fprintf(stderr, "Failed to evaluate xpath expression\n");
+        xmlXPathFreeContext(x_context);
+        return;
+    }
 
-	n = x_obj->nodesetval; //Number of links found
-	printf("WORKING: %d\n", n->nodeNr);
-	for(i = 0; i < n->nodeNr; ++i){ //Supposed to enqueue new links
-		xmlNodePtr a = n->nodeTab[i];
-		xmlChar* href = xmlGetProp(a, (xmlChar*) "href");
-		if(href != NULL){
-			char* href_copy = (char*)xmlStrdup(href);
-			while(*href_copy != '\0'){
-				printf("%c", *href_copy++);
-			}
-			if(href_copy != NULL){
-				pthread_mutex_lock(&url_frontier_lock);
-				enqueue(url_frontier, href_copy);
-				pthread_mutex_unlock(&url_frontier_lock);
-			}
-		}
-		xmlFree(href);
-	}
+    n = x_obj->nodesetval;
 
-	xmlXPathFreeObject(x_obj);
-	xmlXPathFreeContext(x_context);
+    for (i = 0; i < n->nodeNr; ++i) {
+        xmlNodePtr a = n->nodeTab[i];
+		//printf("%s", &a);
+        xmlChar *href = xmlNodeListGetString(doc, a->children, 1);
+        if (href != NULL) {
+            char *href_copy = (char *)xmlStrdup(href);
+            printf("Found link: %s\n", href_copy);
+            pthread_mutex_lock(frontier_lock);
+            enqueue(url_frontier, href_copy);
+            pthread_mutex_unlock(frontier_lock);
+            xmlFree(href);
+        }
+    }
 
+    xmlXPathFreeObject(x_obj);
+    xmlXPathFreeContext(x_context);
 }
 
 // The web_crawler thread function
 void *web_crawler_thread(void *arg) {
 	int i = 0;
-
 	CURL* curl = curl_easy_init();
 	if (!curl) {
 		fprintf(stderr, "Failed to initialize CURL\n");
@@ -107,7 +105,7 @@ void *web_crawler_thread(void *arg) {
 		}
 		printf("%d", i);
 		//Proper format for HTML parsing
-		xmlDocPtr doc = htmlReadDoc((xmlChar*) url, NULL, NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
+		xmlDocPtr doc = htmlReadMemory(url, strlen(url), "", NULL, HTML_PARSE_RECOVER | HTML_PARSE_NOERROR | HTML_PARSE_NOWARNING);
 
 		if(doc == NULL){
 			fprintf(stderr, "Unable to parse: %s\n", url);
@@ -115,14 +113,16 @@ void *web_crawler_thread(void *arg) {
 			continue;
 		}
 
-		getLinks(doc); //Entry for parser
+		getLinks(doc, url_frontier, &url_frontier_lock); //Entry for parser
 		xmlFreeDoc(doc);
+		printf("Segmentation Fault?\n");
 
 		// Save processed URL
 		fprintf(url_file, "%s\n", url);
 
 		//free((char*)url);
 		i++;
+		free((char *)url);
 		usleep(1000000); //Sleeping script to not potentially overwhelm webpage with requests
 	}
 	curl_easy_cleanup(curl);
@@ -133,7 +133,7 @@ void *web_crawler_thread(void *arg) {
 // Creates new web_crawler instance
 web_crawler *web_crawler_create(char *start_url, int max_threads) {
 	// initialize the url_frontier
-	url_frontier = createQueue();
+	url_frontier = createQueue(100);
 	enqueue(url_frontier, start_url);  // add the start_url to the url_frontier
 
 	// File for reading/writing processed URLs

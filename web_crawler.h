@@ -23,7 +23,7 @@ void web_crawler_destroy(web_crawler *crawler);
 // starts the web crawler. It takes a pointer to the web_crawler to be run.
 void web_crawler_run(web_crawler *crawler);
 //Get links from page and enqueue them
-void getLinks(xmlDocPtr d);
+void getLinks(xmlDocPtr doc, struct Queue *url_frontier, pthread_mutex_t *frontier_lock);
 
 #endif // web_crawler.h
 

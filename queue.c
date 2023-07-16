@@ -16,96 +16,64 @@ struct Node{
 
 //Queue structure
 struct Queue{
-	struct Node *head;
-	struct Node *tail;
+	char** urls;
+	int front;
+	int rear;
+	int cap;
+	int size;
 };
 
 
 //Method to create queue
-struct Queue* createQueue(){
+struct Queue* createQueue(int c){
 	struct Queue* q = (struct Queue*) malloc(sizeof(struct Queue));
-	q->head = NULL;
-	q->tail = NULL;
+	q->urls = (char**)malloc(c*sizeof(char*));
+	q->front = 0;
+	q->rear = -1;
+	q->cap = c;
+	q->size = 0;
 	return q;
 }
 
 //Returns whether queue is empty
 int empty(struct Queue* q){
-	return (q->head == NULL);
+	return (q->size == 0);
 }
 
 
 //Adds to end of queue
 void enqueue(struct Queue* q, const char* item){
-	struct Node *p = malloc(sizeof(struct Node));
-	p->address = malloc((strlen(item) + 1) * sizeof(char));
-	strncpy(p->address, item, strlen(item)+1);
-	p->next = NULL;
+	if(q->size >= q->cap){
+		int new_cap = q->cap*2;
+		q->urls = (char**)realloc(q->urls, new_cap*sizeof(char*));
+		q->cap = new_cap;
+	}
 
-	if(q->head == NULL && q->tail == NULL){
-		q->head = p;
-		q->tail = p;
-	}
-	else if(q->head == q->tail){
-		p->next = q->tail;
-		q->tail = p;
-		q->head->last = q->tail;
-	}
-	else{
-		p->next = q->tail;
-		q->tail->last = p;
-		q->tail = p;
-	}
+	q->rear = (q->rear+1) % q->cap;
+	q->urls[q->rear] = strdup(item);
+	q->size++;
 }
 
 
 //Dequeues from front of queue, adjusts queue on dequeue
-char* dequeue(struct Queue* q){
-	if(q->head == NULL){
+const char* dequeue(struct Queue* q){
+	if(q->size == 0){
 		printf("EMPTY");
 		return NULL;
 	}
 
-	struct Node *temp = q->head;
-	char* ret = strdup(q->head->address);
-
-	if(q->head == q->tail){
-		q->head = NULL;
-		q->tail = NULL;
-	}
-	else{
-		q->head = q->head->last;
-	}
-	return ret;
-}
-
-
-//Returns front element of queue
-const char* front(struct Queue* q){
-	if(empty(q)) return NULL;
-
-	return q->head->address;
-}
-
-
-//Returns element at end of queue
-const char* rear(struct Queue* q){
-	if(empty(q)) return NULL;
-
-	return q->tail->address;
+	const char* url = q->urls[q->front];
+	q->front = (q->front+1) % q->cap;
+	q->size--;
+	return url;
 }
 
 //Deallocate memory being used for queue
 void destroyQueue(struct Queue* q){
-	struct Node* curr = q->head;
-
-	while(curr != NULL){
-		struct Node* next = curr->last;
-		//free(curr->address);
-		free(curr);
-
-		curr = next;
+	for(int i = 0; i < q->size; i++){
+		free(q->urls[i]);
 	}
 
+	free(q->urls);
 	free(q);
 } // queue.c
