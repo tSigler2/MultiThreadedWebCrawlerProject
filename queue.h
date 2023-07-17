@@ -41,4 +41,4 @@ const char* rear(struct Queue* q);
 //Destroys Queue
 void destroyQueue(struct Queue* q);
 
-#endif
+#endif //queue.h
