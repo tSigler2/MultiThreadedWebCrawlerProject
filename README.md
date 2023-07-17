@@ -1,5 +1,14 @@
 # **MultiThreadedWebCrawlerProject**
 
+## terminal commands for use:
+
+### compiles all files: 
+  $ make 
+### run project:
+  $ ./web_crawler  
+### remove compile files:
+  $ make clean 
+
 ## **Web Crawler OS Project**
 
 ### main.c
